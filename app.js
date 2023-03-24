@@ -1,3 +1,5 @@
+const container = document.querySelector(".container");
+
 // createBoard module
 const gameBoard = (() => {
   const cells = 9;
@@ -44,9 +46,92 @@ const Players = () => {
 //testing
 let board = gameBoard.getBoard();
 let player = Players();
-gameBoard.drawMark(board, 2, player.getPlayer());
-player.switchPlayers();
-gameBoard.drawMark(board, 6, player.getPlayer());
-console.log(board);
+
+container.addEventListener("click", (e) => {
+  console.log(e);
+  gameBoard.drawMark(board, e.target.className, player.getPlayer());
+  player.switchPlayers();
+});
+// gameBoard.drawMark(board, 0, player.getPlayer());
+// player.switchPlayers();
+// gameBoard.drawMark(board, 6, player.getPlayer());null
+
+// board = ["X", "X", "X", "X", "X", "X", "X", "X", "O"];
+// console.log(board);
 
 // playGame module
+const Game = (() => {
+  let winner;
+  let result = false;
+
+  const gameEnd = (board) => {
+    let counter = 0;
+    for (item of board) {
+      if (item === null) counter++;
+    }
+
+    if (counter === 0) {
+      result = "DRAW";
+    } else if (
+      board[0] === board[1] &&
+      board[1] === board[2] &&
+      board[0] !== null
+    ) {
+      result = true;
+    } else if (
+      board[3] === board[4] &&
+      board[4] === board[5] &&
+      board[3] !== null
+    ) {
+      result = true;
+    } else if (
+      board[6] === board[7] &&
+      board[7] === board[8] &&
+      board[6] !== null
+    ) {
+      result = true;
+    } else if (
+      board[0] === board[3] &&
+      board[3] === board[6] &&
+      board[0] !== null
+    ) {
+      result = true;
+    } else if (
+      board[1] === board[4] &&
+      board[4] === board[7] &&
+      board[1] !== null
+    ) {
+      result = true;
+    } else if (
+      board[2] === board[5] &&
+      board[5] === board[8] &&
+      board[2] !== null
+    ) {
+      result = true;
+    } else if (
+      board[0] === board[4] &&
+      board[4] === board[8] &&
+      board[0] !== null
+    ) {
+      result = true;
+    } else if (
+      board[2] === board[4] &&
+      board[4] === board[6] &&
+      board[2] !== null
+    ) {
+      result = true;
+    }
+
+    return result;
+  };
+
+  return { gameEnd };
+})();
+
+if (Game.gameEnd(board) === "DRAW") {
+  console.log("DRAW");
+} else if (Game.gameEnd(board) === true) {
+  console.log("WIN");
+}
+
+//if endgame not by draw -> switchPlayer -> currentPlayer = winner
