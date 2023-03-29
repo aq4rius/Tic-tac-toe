@@ -1,16 +1,63 @@
 * {
   box-sizing: border-box;
-  height: 100%;
+}
+body {
+  background-color: rgb(117, 157, 93);
+  min-height: 100vh;
   margin: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
-body {
+.hide {
+  display: none !important;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: 3fr 1fr 3fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 30px;
+}
+
+.options > p {
+  display: grid;
+  align-items: center;
+  justify-content: center;
+}
+
+.player1,
+.player2 {
+  background-color: rgb(185, 207, 172);
+  border: 1px solid black;
+  padding: 10px;
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.start-button {
+  display: grid;
+  grid-column: 1/4;
   justify-content: center;
   align-items: center;
 }
 
+.startBtn {
+  background-color: rgb(185, 207, 172);
+  font-size: 3rem;
+}
+
+/*############### GAME BOARD ###########*/
 .container {
+  background-color: rgb(185, 207, 172);
   display: grid;
   height: 400px;
   width: 400px;
@@ -19,5 +66,27 @@ body {
 }
 
 .container > div {
+  font-size: 5rem;
   border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*############## Display Result ##########*/
+
+.modal {
+  background-color: rgb(117, 157, 93);
+  padding: 1em;
+  max-width: 50ch;
+  border: 0;
+  box-shadow: 0 0 1em rgb(0 0 0 / 0.3);
+}
+
+.modal::backdrop {
+  background: rgb(0 0 0 / 0.4);
+}
+
+button {
+  background-color: rgb(185, 207, 172);
 }

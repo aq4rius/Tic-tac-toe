@@ -1,6 +1,54 @@
 const container = document.querySelector(".container");
+const cells = container.querySelectorAll("div");
+const startBtn = document.querySelector(".startBtn");
+const menu = document.querySelector(".options");
+const modal = document.querySelector("#modal");
+const retryBtn = document.querySelector(".retryBtn");
+const exitBtn = document.querySelector(".exitBtn");
+const boardHide = document.querySelector("#hide");
+const whoseTurn = document.querySelector("#turn");
 
-// createBoard module
+container.addEventListener("click", handleClick);
+startBtn.addEventListener("click", startGame);
+retryBtn.addEventListener("click", restartGame);
+exitBtn.addEventListener("click", exitGame);
+
+function handleClick(e) {
+  displayController.addMark(e);
+  displayController.drawMark();
+  displayController.displayTurn();
+
+  if (Game.gameEnd(gameBoard.getBoard())) {
+    Game.getWinner();
+  }
+}
+
+function startGame(e) {
+  menu.classList.add("hide");
+  boardHide.classList.remove("hide");
+}
+
+function restartGame() {
+  gameBoard.clearBoard();
+  Player.startingPlayer();
+  Game.reset();
+  displayController.drawMark();
+  displayController.displayTurn();
+  modal.close();
+}
+
+function exitGame() {
+  gameBoard.clearBoard();
+  Player.startingPlayer();
+  Game.reset();
+  displayController.drawMark();
+  displayController.displayTurn();
+  modal.close();
+  menu.classList.remove("hide");
+  boardHide.classList.add("hide");
+}
+
+// Create Board module
 const gameBoard = (() => {
   const cells = 9;
   const board = [];
@@ -17,11 +65,17 @@ const gameBoard = (() => {
     }
   };
 
-  return { getBoard, drawMark };
+  const clearBoard = () => {
+    for (let i = 0; i < cells; i++) {
+      board[i] = null;
+    }
+  };
+
+  return { getBoard, drawMark, clearBoard };
 })();
 
-// Players factory function
-const Players = () => {
+// Players module
+const Player = (() => {
   const player1 = "X";
   const player2 = "O";
 
@@ -37,36 +91,59 @@ const Players = () => {
 
   const getPlayer = () => activePlayer;
 
+  const startingPlayer = () => {
+    activePlayer = player1;
+  };
+
+  const whichPlayer = () => {
+    let currentPlayer;
+    if (activePlayer === player1) {
+      currentPlayer = "Player1";
+    } else currentPlayer = "Player2";
+    return currentPlayer;
+  };
+
   return {
     getPlayer,
     switchPlayers,
+    startingPlayer,
+    whichPlayer,
   };
-};
+})();
 
-//testing
-let board = gameBoard.getBoard();
-let player = Players();
+// Display module
+const displayController = (() => {
+  const board = gameBoard.getBoard();
 
-container.addEventListener("click", (e) => {
-  console.log(e);
-  gameBoard.drawMark(board, e.target.className, player.getPlayer());
-  player.switchPlayers();
-});
-// gameBoard.drawMark(board, 0, player.getPlayer());
-// player.switchPlayers();
-// gameBoard.drawMark(board, 6, player.getPlayer());null
+  const addMark = (e) => {
+    if (e.target.textContent === "") {
+      gameBoard.drawMark(board, e.target.className, Player.getPlayer());
+      Player.switchPlayers();
+    } else return;
+  };
 
-// board = ["X", "X", "X", "X", "X", "X", "X", "X", "O"];
-// console.log(board);
+  const drawMark = () => {
+    for (let i = 0; i < 9; i++) {
+      cells[i].textContent = board[i];
+    }
+  };
 
-// playGame module
+  const displayTurn = () => {
+    whoseTurn.textContent = `${Player.whichPlayer()}'s turn!`;
+  };
+
+  return { addMark, drawMark, displayTurn };
+})();
+
+// Game logic module
 const Game = (() => {
-  let winner;
   let result = false;
+  const resultDiv = document.createElement("div");
 
   const gameEnd = (board) => {
     let counter = 0;
-    for (item of board) {
+
+    for (const item of board) {
       if (item === null) counter++;
     }
 
@@ -125,13 +202,27 @@ const Game = (() => {
     return result;
   };
 
-  return { gameEnd };
+  const getWinner = () => {
+    const result = gameEnd(gameBoard.getBoard());
+    if (result === "DRAW") {
+      // let result = document.createElement("div");
+      resultDiv.textContent = "DRAW!";
+      modal.insertBefore(resultDiv, exitBtn);
+      modal.showModal();
+      console.log("DRAW");
+    } else if (result === true) {
+      Player.switchPlayers();
+      // let result = document.createElement("div");
+      resultDiv.textContent = `Player ${Player.getPlayer()} WON!`;
+      modal.insertBefore(resultDiv, exitBtn);
+      modal.showModal();
+      console.log(`Player ${Player.getPlayer()} WON!`);
+    }
+  };
+
+  const reset = () => {
+    result = false;
+  };
+
+  return { gameEnd, getWinner, reset };
 })();
-
-if (Game.gameEnd(board) === "DRAW") {
-  console.log("DRAW");
-} else if (Game.gameEnd(board) === true) {
-  console.log("WIN");
-}
-
-//if endgame not by draw -> switchPlayer -> currentPlayer = winner
