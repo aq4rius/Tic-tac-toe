@@ -90,3 +90,13 @@ h1 {
 button {
   background-color: rgb(185, 207, 172);
 }
+
+#turn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+fieldset {
+  border: none;
+}

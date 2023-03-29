@@ -13,26 +13,40 @@ startBtn.addEventListener("click", startGame);
 retryBtn.addEventListener("click", restartGame);
 exitBtn.addEventListener("click", exitGame);
 
+let vsComputer = false;
+
 function handleClick(e) {
   displayController.addMark(e);
-  displayController.drawMark();
+  displayController.drawInDOM();
   displayController.displayTurn();
 
   if (Game.gameEnd(gameBoard.getBoard())) {
     Game.getWinner();
+    return;
+  }
+
+  if (vsComputer) {
+    ComputerMove.randomMove();
   }
 }
 
-function startGame(e) {
+function startGame() {
+  let player1 = document.querySelector(
+    'input[name="player1-type"]:checked'
+  ).value;
+  let player2 = document.querySelector(
+    'input[name="player2-type"]:checked'
+  ).value;
   menu.classList.add("hide");
   boardHide.classList.remove("hide");
+  vsComputer = Player.differentPlayerSetup(player1, player2);
 }
 
 function restartGame() {
   gameBoard.clearBoard();
   Player.startingPlayer();
   Game.reset();
-  displayController.drawMark();
+  displayController.drawInDOM();
   displayController.displayTurn();
   modal.close();
 }
@@ -41,7 +55,7 @@ function exitGame() {
   gameBoard.clearBoard();
   Player.startingPlayer();
   Game.reset();
-  displayController.drawMark();
+  displayController.drawInDOM();
   displayController.displayTurn();
   modal.close();
   menu.classList.remove("hide");
@@ -79,6 +93,7 @@ const Player = (() => {
   const player1 = "X";
   const player2 = "O";
 
+  let vsComputer = false;
   let activePlayer = player1;
 
   const switchPlayers = () => {
@@ -103,11 +118,29 @@ const Player = (() => {
     return currentPlayer;
   };
 
+  const differentPlayerSetup = (choice1, choice2) => {
+    if (choice1 === "computer" && choice2 === "human") {
+      ComputerMove.randomMove();
+      return true;
+    }
+    // else if (choice1 === "computer" && choice2 === "computer") {
+    //   while (!Game.gameEnd(gameBoard.getBoard())) {
+    //     ComputerMove.randomMove();
+    //   }
+    //   Game.getWinner();
+    // }
+    else if (choice1 === "human" && choice2 === "computer") {
+      return true;
+    }
+    return false;
+  };
+
   return {
     getPlayer,
     switchPlayers,
     startingPlayer,
     whichPlayer,
+    differentPlayerSetup,
   };
 })();
 
@@ -122,7 +155,7 @@ const displayController = (() => {
     } else return;
   };
 
-  const drawMark = () => {
+  const drawInDOM = () => {
     for (let i = 0; i < 9; i++) {
       cells[i].textContent = board[i];
     }
@@ -132,7 +165,7 @@ const displayController = (() => {
     whoseTurn.textContent = `${Player.whichPlayer()}'s turn!`;
   };
 
-  return { addMark, drawMark, displayTurn };
+  return { addMark, drawInDOM, displayTurn };
 })();
 
 // Game logic module
@@ -205,14 +238,12 @@ const Game = (() => {
   const getWinner = () => {
     const result = gameEnd(gameBoard.getBoard());
     if (result === "DRAW") {
-      // let result = document.createElement("div");
       resultDiv.textContent = "DRAW!";
       modal.insertBefore(resultDiv, exitBtn);
       modal.showModal();
       console.log("DRAW");
     } else if (result === true) {
       Player.switchPlayers();
-      // let result = document.createElement("div");
       resultDiv.textContent = `Player ${Player.getPlayer()} WON!`;
       modal.insertBefore(resultDiv, exitBtn);
       modal.showModal();
@@ -225,4 +256,43 @@ const Game = (() => {
   };
 
   return { gameEnd, getWinner, reset };
+})();
+
+//AI module
+
+const ComputerMove = (() => {
+  const board = gameBoard.getBoard();
+
+  const availableCells = () => {
+    const nullIndexes = board
+      .map((elem, index) => {
+        if (elem === null) {
+          return index;
+        }
+      })
+      .filter((index) => index !== undefined);
+    console.log(nullIndexes);
+    return nullIndexes;
+  };
+
+  const randomMove = () => {
+    let board = availableCells();
+    console.log(board);
+    randomCell = Math.floor(Math.random() * board.length);
+
+    setTimeout(() => {
+      gameBoard.drawMark(
+        gameBoard.getBoard(),
+        board[randomCell],
+        Player.getPlayer()
+      );
+      Player.switchPlayers();
+      displayController.drawInDOM();
+      if (Game.gameEnd(gameBoard.getBoard())) {
+        Game.getWinner();
+      }
+    }, "1000");
+  };
+
+  return { randomMove };
 })();
