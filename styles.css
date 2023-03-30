@@ -55,6 +55,10 @@ h1 {
   font-size: 3rem;
 }
 
+.mode-div {
+  margin: 15px 0;
+}
+
 /*############### GAME BOARD ###########*/
 .container {
   background-color: rgb(185, 207, 172);
@@ -76,11 +80,19 @@ h1 {
 /*############## Display Result ##########*/
 
 .modal {
+  min-width: 200px;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
   background-color: rgb(117, 157, 93);
   padding: 1em;
   max-width: 50ch;
   border: 0;
   box-shadow: 0 0 1em rgb(0 0 0 / 0.3);
+}
+
+.modal > button {
+  width: 80px;
 }
 
 .modal::backdrop {

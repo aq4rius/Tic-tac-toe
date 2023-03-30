@@ -37,17 +37,27 @@ function startGame() {
   let player2 = document.querySelector(
     'input[name="player2-type"]:checked'
   ).value;
+  Player.getNick();
   menu.classList.add("hide");
   boardHide.classList.remove("hide");
+  whoseTurn.textContent = `${Player.whichPlayer()}'s turn!`;
   vsComputer = Player.differentPlayerSetup(player1, player2);
 }
 
 function restartGame() {
+  let player1 = document.querySelector(
+    'input[name="player1-type"]:checked'
+  ).value;
+  let player2 = document.querySelector(
+    'input[name="player2-type"]:checked'
+  ).value;
   gameBoard.clearBoard();
+  vsComputer = Player.differentPlayerSetup(player1, player2);
   Player.startingPlayer();
   Game.reset();
   displayController.drawInDOM();
   displayController.displayTurn();
+  modal.setAttribute("style", "display: none;");
   modal.close();
 }
 
@@ -57,6 +67,7 @@ function exitGame() {
   Game.reset();
   displayController.drawInDOM();
   displayController.displayTurn();
+  modal.setAttribute("style", "display: none;");
   modal.close();
   menu.classList.remove("hide");
   boardHide.classList.add("hide");
@@ -93,7 +104,12 @@ const Player = (() => {
   const player1 = "X";
   const player2 = "O";
 
-  let vsComputer = false;
+  const getNick = () => {
+    let nick1 = document.querySelector("#player1-name").value;
+    let nick2 = document.querySelector("#player2-name").value;
+    return [nick1, nick2];
+  };
+
   let activePlayer = player1;
 
   const switchPlayers = () => {
@@ -113,8 +129,8 @@ const Player = (() => {
   const whichPlayer = () => {
     let currentPlayer;
     if (activePlayer === player1) {
-      currentPlayer = "Player1";
-    } else currentPlayer = "Player2";
+      currentPlayer = getNick()[0];
+    } else currentPlayer = getNick()[1];
     return currentPlayer;
   };
 
@@ -122,14 +138,16 @@ const Player = (() => {
     if (choice1 === "computer" && choice2 === "human") {
       ComputerMove.randomMove();
       return true;
-    }
-    // else if (choice1 === "computer" && choice2 === "computer") {
-    //   while (!Game.gameEnd(gameBoard.getBoard())) {
-    //     ComputerMove.randomMove();
-    //   }
-    //   Game.getWinner();
-    // }
-    else if (choice1 === "human" && choice2 === "computer") {
+    } else if (choice1 === "computer" && choice2 === "computer") {
+      const recursiveMove = () => {
+        if (!Game.gameEnd(gameBoard.getBoard())) {
+          ComputerMove.randomMove();
+          setTimeout(recursiveMove, 1000);
+        }
+      };
+      setTimeout(recursiveMove, 1000);
+      return true;
+    } else if (choice1 === "human" && choice2 === "computer") {
       return true;
     }
     return false;
@@ -141,6 +159,7 @@ const Player = (() => {
     startingPlayer,
     whichPlayer,
     differentPlayerSetup,
+    getNick,
   };
 })();
 
@@ -180,13 +199,7 @@ const Game = (() => {
       if (item === null) counter++;
     }
 
-    if (counter === 0) {
-      result = "DRAW";
-    } else if (
-      board[0] === board[1] &&
-      board[1] === board[2] &&
-      board[0] !== null
-    ) {
+    if (board[0] === board[1] && board[1] === board[2] && board[0] !== null) {
       result = true;
     } else if (
       board[3] === board[4] &&
@@ -230,6 +243,12 @@ const Game = (() => {
       board[2] !== null
     ) {
       result = true;
+    } else if (counter === 0) {
+      result = "DRAW";
+    }
+
+    if (result) {
+      whoseTurn.textContent = "";
     }
 
     return result;
@@ -240,12 +259,16 @@ const Game = (() => {
     if (result === "DRAW") {
       resultDiv.textContent = "DRAW!";
       modal.insertBefore(resultDiv, exitBtn);
+      modal.setAttribute("style", "display: flex;");
       modal.showModal();
       console.log("DRAW");
     } else if (result === true) {
       Player.switchPlayers();
-      resultDiv.textContent = `Player ${Player.getPlayer()} WON!`;
+      if (Player.getPlayer() === "X") {
+        resultDiv.textContent = `Player ${Player.getNick()[0]} WON!`;
+      } else resultDiv.textContent = `Player ${Player.getNick()[1]} WON!`;
       modal.insertBefore(resultDiv, exitBtn);
+      modal.setAttribute("style", "display: flex;");
       modal.showModal();
       console.log(`Player ${Player.getPlayer()} WON!`);
     }
@@ -271,13 +294,11 @@ const ComputerMove = (() => {
         }
       })
       .filter((index) => index !== undefined);
-    console.log(nullIndexes);
     return nullIndexes;
   };
 
   const randomMove = () => {
     let board = availableCells();
-    console.log(board);
     randomCell = Math.floor(Math.random() * board.length);
 
     setTimeout(() => {
@@ -287,6 +308,7 @@ const ComputerMove = (() => {
         Player.getPlayer()
       );
       Player.switchPlayers();
+      displayController.displayTurn();
       displayController.drawInDOM();
       if (Game.gameEnd(gameBoard.getBoard())) {
         Game.getWinner();
