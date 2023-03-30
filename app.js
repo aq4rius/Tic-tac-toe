@@ -7,11 +7,39 @@ const retryBtn = document.querySelector(".retryBtn");
 const exitBtn = document.querySelector(".exitBtn");
 const boardHide = document.querySelector("#hide");
 const whoseTurn = document.querySelector("#turn");
+const modeDiv1 = document.querySelector(".mode-div1");
+const modeDiv2 = document.querySelector(".mode-div2");
 
 container.addEventListener("click", handleClick);
 startBtn.addEventListener("click", startGame);
 retryBtn.addEventListener("click", restartGame);
 exitBtn.addEventListener("click", exitGame);
+
+const playerTypeRadios = document.querySelectorAll('input[name$="-type"]');
+playerTypeRadios.forEach((radio) =>
+  radio.addEventListener("change", displayModeSelect)
+);
+
+function displayModeSelect() {
+  const player1Type = document.querySelector(
+    'input[name="player1-type"]:checked'
+  ).value;
+  const player2Type = document.querySelector(
+    'input[name="player2-type"]:checked'
+  ).value;
+
+  if (player1Type === "computer") {
+    modeDiv1.style.display = "block";
+  } else {
+    modeDiv1.style.display = "none";
+  }
+
+  if (player2Type === "computer") {
+    modeDiv2.style.display = "block";
+  } else {
+    modeDiv2.style.display = "none";
+  }
+}
 
 let vsComputer = false;
 
