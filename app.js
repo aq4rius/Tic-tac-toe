@@ -44,9 +44,13 @@ function displayModeSelect() {
 let vsComputer = false;
 
 function handleClick(e) {
+  if (e.target.classList.contains("occupied")) {
+    return;
+  }
   displayController.addMark(e);
   displayController.drawInDOM();
   displayController.displayTurn();
+  if (vsComputer) container.removeEventListener("click", handleClick);
 
   if (Game.gameEnd(gameBoard.getBoard())) {
     Game.getWinner();
@@ -80,7 +84,9 @@ function restartGame() {
     'input[name="player2-type"]:checked'
   ).value;
   gameBoard.clearBoard();
+  container.addEventListener("click", handleClick);
   vsComputer = Player.differentPlayerSetup(player1, player2);
+  cells.forEach((element) => element.classList.remove("occupied"));
   Player.startingPlayer();
   Game.reset();
   displayController.drawInDOM();
@@ -91,6 +97,8 @@ function restartGame() {
 
 function exitGame() {
   gameBoard.clearBoard();
+  cells.forEach((element) => element.classList.remove("occupied"));
+  container.addEventListener("click", handleClick);
   Player.startingPlayer();
   Game.reset();
   displayController.drawInDOM();
@@ -164,11 +172,13 @@ const Player = (() => {
 
   const differentPlayerSetup = (choice1, choice2) => {
     if (choice1 === "computer" && choice2 === "human") {
+      container.removeEventListener("click", handleClick);
       ComputerMove.randomMove();
       return true;
     } else if (choice1 === "computer" && choice2 === "computer") {
       const recursiveMove = () => {
         if (!Game.gameEnd(gameBoard.getBoard())) {
+          container.removeEventListener("click", handleClick);
           ComputerMove.randomMove();
           setTimeout(recursiveMove, 1000);
         }
@@ -176,6 +186,7 @@ const Player = (() => {
       setTimeout(recursiveMove, 1000);
       return true;
     } else if (choice1 === "human" && choice2 === "computer") {
+      container.addEventListener("click", handleClick);
       return true;
     }
     return false;
@@ -205,6 +216,7 @@ const displayController = (() => {
   const drawInDOM = () => {
     for (let i = 0; i < 9; i++) {
       cells[i].textContent = board[i];
+      if (board[i] !== null) cells[i].classList.add("occupied");
     }
   };
 
@@ -221,59 +233,23 @@ const Game = (() => {
   const resultDiv = document.createElement("div");
 
   const gameEnd = (board) => {
-    let counter = 0;
+    const emptyCells = board.filter((cell) => cell === null).length;
 
-    for (const item of board) {
-      if (item === null) counter++;
-    }
+    const winningSetup = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    const isWinning = winningSetup.some(
+      ([a, b, c]) => board[a] && board[a] === board[b] && board[b] === board[c]
+    );
 
-    if (board[0] === board[1] && board[1] === board[2] && board[0] !== null) {
-      result = true;
-    } else if (
-      board[3] === board[4] &&
-      board[4] === board[5] &&
-      board[3] !== null
-    ) {
-      result = true;
-    } else if (
-      board[6] === board[7] &&
-      board[7] === board[8] &&
-      board[6] !== null
-    ) {
-      result = true;
-    } else if (
-      board[0] === board[3] &&
-      board[3] === board[6] &&
-      board[0] !== null
-    ) {
-      result = true;
-    } else if (
-      board[1] === board[4] &&
-      board[4] === board[7] &&
-      board[1] !== null
-    ) {
-      result = true;
-    } else if (
-      board[2] === board[5] &&
-      board[5] === board[8] &&
-      board[2] !== null
-    ) {
-      result = true;
-    } else if (
-      board[0] === board[4] &&
-      board[4] === board[8] &&
-      board[0] !== null
-    ) {
-      result = true;
-    } else if (
-      board[2] === board[4] &&
-      board[4] === board[6] &&
-      board[2] !== null
-    ) {
-      result = true;
-    } else if (counter === 0) {
-      result = "DRAW";
-    }
+    const result = isWinning ? true : emptyCells === 0 ? "DRAW" : false;
 
     if (result) {
       whoseTurn.textContent = "";
@@ -328,7 +304,6 @@ const ComputerMove = (() => {
   const randomMove = () => {
     let board = availableCells();
     randomCell = Math.floor(Math.random() * board.length);
-
     setTimeout(() => {
       gameBoard.drawMark(
         gameBoard.getBoard(),
@@ -341,6 +316,7 @@ const ComputerMove = (() => {
       if (Game.gameEnd(gameBoard.getBoard())) {
         Game.getWinner();
       }
+      container.addEventListener("click", handleClick);
     }, "1000");
   };
 
