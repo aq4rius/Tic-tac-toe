@@ -1,6 +1,6 @@
 ## **Description**
 
-- Simple Tic-tac-toe game built as part of The Odin Project
+- Simple Tic-tac-toe game built as part of [The Odin Project](https://www.theodinproject.com/)
 - The Game features Player vs Player, Player vs Computer, and Computer vs Computer modes
 - This project was built to get more familiar with structurizing the code using modules and factory functions
 
